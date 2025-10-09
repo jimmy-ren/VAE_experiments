@@ -1,6 +1,5 @@
 import torch.nn as nn
 import torch.nn.functional as F
-from sympy.physics.units import temperature
 
 from aux_funs import *
 
