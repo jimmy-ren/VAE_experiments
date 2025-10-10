@@ -10,8 +10,9 @@ import matplotlib.pyplot as plt
 from torchvision.utils import save_image
 
 batch_size = 100
-FILE = './save/MNIST/model_vae_epoch_500_vae_warmup_cotrain.pth'
-FILE_fb = './save/MNIST/fb_vae_epoch_500_vae_warmup_cotrain.pth'
+FILE = './save/MNIST/model_sthash_vae_epoch_660_sthash_warmup_cotrain.pth'
+FILE_fb_sthash_vae = './save/MNIST/fb_sthash_vae_epoch_660_vae_sthash_warmup_cotrain.pth'
+FILE_fb_sthash = './save/MNIST/fb_novae_epoch_50.pth'
 # device
 device = torch.device('cuda:1' if torch.cuda.is_available else 'cpu')
 torch.cuda.set_device(device)
@@ -21,11 +22,11 @@ print('using device:', dn)
 model = Unet(im_channels=1, enable_attention=False)
 
 model.load_state_dict(torch.load(FILE, map_location=torch.device('cpu')))
-filter_bank = torch.load(FILE_fb, map_location=device)
-#filter_bank = torch.zeros(size=(1,49,8,3,3), device=device)
-#filter_bank[:,24:25,:,:,:] = 1
+filter_bank_sthash_vae = torch.load(FILE_fb_sthash_vae, map_location=device)
+filter_bank_sthash = torch.load(FILE_fb_sthash, map_location=device)
+
 '''
-fb = filter_bank.squeeze(0)
+fb = filter_bank_sthash_vae.squeeze(0)
 fb = fb.permute(1, 2, 3, 0)
 fb = fb.to('cpu').detach()
 #fb = torch.softmax(fb, dim=-1)
@@ -69,7 +70,8 @@ with torch.no_grad():
         LR_images_unfolded_input = torch.permute(LR_images_unfolded, (0, 2, 1))
         LR_images_unfolded_input = LR_images_unfolded_input.reshape(-1, 1, 7, 7)
 
-        pred_mean, pred_variance, recon_out, ker_pred, filter_out = model(LR_images_unfolded_input, filter_bank)
+        sthash_filters = hash_and_get_filter(LR_images, filter_bank_sthash, training=False)
+        pred_mean, pred_variance, recon_out, ker_pred, filter_out = model(LR_images_unfolded_input, filter_bank_sthash_vae, sthash_filters)
 
         #ker_pred = ker_pred.view(100, -1, 49)
         #ker_pred = ker_pred.permute(0, 2, 1)
@@ -90,21 +92,18 @@ with torch.no_grad():
         folded_recon = folded_recon.to('cpu')
         LR_images = torch.clip(LR_images.to('cpu'), min=0.0, max=1.0)
         filtered = torch.clip(filtered.to('cpu'), min=0.0, max=1.0)
-
         '''
         images = images.numpy()
-        folded_recon = folded_recon.numpy()
+
         im1 = filtered[1,0,:,:]
         im2 = images[1,0,:,:]
         im3 = LR_images[1,0,:,:]
-        im4 = folded_recon[1,0,:,:]
 
         p = calculate_psnr(im1, im2, 1.0)
         p2 = calculate_psnr(im3, im2, 1.0)
-        
+
         psnr_ = batch_psnr(LR_images, images)
         '''
-
         psnr = batch_psnr(filtered, images)
         avg_psnr = avg_psnr + psnr
 

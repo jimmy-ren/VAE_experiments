@@ -3,6 +3,7 @@ import torch
 import numpy as np
 import torch.nn.functional as F
 
+
 def batch_psnr(pred_batch, gt_batch, data_range=1.0, reduction='mean'):
     """
     Compute PSNR for a batch of images and their ground truth.
@@ -149,3 +150,30 @@ def hash_and_get_filter(imgs, filter_bank, training=True):
     final_filters = sampled_filters.squeeze(-1).squeeze(-1).squeeze(-1)
     return final_filters
 
+
+def combine_filter_batches_pairwise(batch_a, batch_b):
+    """
+    Combine two batches of filters pairwise: batch_a[i] with batch_b[i]
+
+    Args:
+        batch_a: shape (B, H*W)  # e.g., (32, 7*7)
+        batch_b: shape (B, H*W)  # e.g., (32, 7*7)
+
+    Returns:
+        composite_batch: shape (32, 7*7)
+    """
+    batch_size = batch_a.shape[0]
+    h = int(math.sqrt(batch_a.shape[1]))
+
+    batch_a = batch_a.view(1, batch_size, h, h)
+    batch_b = batch_b.view(batch_size, 1, h, h)
+
+    # Approach 1: Using group convolution (efficient)
+    composite_batch = F.conv2d(
+        batch_a, batch_b,
+        padding='same',  # Full convolution
+        groups=batch_size,  # Each filter pair convolved separately
+    )
+
+    composite_batch = composite_batch.view(batch_size, h*h)
+    return composite_batch

@@ -312,7 +312,7 @@ class KernelPrediction(nn.Module):
     def __init__(self, latent_dim):
         super(KernelPrediction, self).__init__()
 
-    def forward(self, latent_embedding, input_img, filter_bank):
+    def forward(self, latent_embedding, input_img, filter_bank, buddy_filter=None):
         coord = latent_embedding[0]
         normalized_coord = normalize_mu(coord, assumed_range=(-3, 3))
         grid_coords = normalized_coord.unsqueeze(1).unsqueeze(1).unsqueeze(1)
@@ -330,6 +330,9 @@ class KernelPrediction(nn.Module):
         )
 
         final_filters = sampled_filters.squeeze(-1).squeeze(-1).squeeze(-1)
+
+        if buddy_filter is not None:
+            final_filters = combine_filter_batches_pairwise(buddy_filter, final_filters)
 
         input_img = input_img.view(-1, 49)
         net_out = torch.linalg.vecdot(input_img, final_filters, dim=1)

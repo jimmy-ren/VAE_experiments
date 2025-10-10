@@ -94,13 +94,9 @@ class Unet(nn.Module):
             nn.Conv2d(self.up_ch[-1], self.im_channels, kernel_size=3, padding=1)
         )
 
-    def forward(self, x, filter_bank):
+    def forward(self, x, filter_bank, buddy_filter=None):
 
         out = self.cv1(x)
-
-        # Time Projection
-        #t_emb = get_time_embedding(t, self.t_emb_dim)
-        #t_emb = self.t_proj(t_emb)
 
         # DownC outputs
         down_outs = []
@@ -115,7 +111,7 @@ class Unet(nn.Module):
         pred_mean, pred_variance, out = self.mid_layers(out)
 
         # KPN Block
-        ker_pred, filter_out = self.kpn_layers([pred_mean, pred_variance], x, filter_bank)
+        ker_pred, filter_out = self.kpn_layers([pred_mean, pred_variance], x, filter_bank, buddy_filter)
 
         # UpC Blocks
         for up in self.ups:
