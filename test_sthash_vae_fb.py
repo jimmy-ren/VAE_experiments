@@ -10,11 +10,12 @@ import matplotlib.pyplot as plt
 from torchvision.utils import save_image
 
 batch_size = 100
-FILE = './save/MNIST/model_sthash_vae_epoch_660_sthash_warmup_cotrain.pth'
-FILE_fb_sthash_vae = './save/MNIST/fb_sthash_vae_epoch_660_vae_sthash_warmup_cotrain.pth'
-FILE_fb_sthash = './save/MNIST/fb_novae_epoch_50.pth'
+FILE = './save/MNIST/model_sthash_vae_epoch_100_exp6.pth'
+FILE_fb_sthash_vae = './save/MNIST/fb_sthash_vae_epoch_100_exp6.pth'
+#FILE_fb_sthash = './save/MNIST/fb_novae_epoch_50.pth'
+FILE_fb_sthash = './save/MNIST/fb_sthash_buddy_epoch_100_exp6.pth'
 # device
-device = torch.device('cuda:1' if torch.cuda.is_available else 'cpu')
+device = torch.device('cuda:0' if torch.cuda.is_available else 'cpu')
 torch.cuda.set_device(device)
 dn = torch.cuda.get_device_name(device)
 print('using device:', dn)
@@ -26,7 +27,7 @@ filter_bank_sthash_vae = torch.load(FILE_fb_sthash_vae, map_location=device)
 filter_bank_sthash = torch.load(FILE_fb_sthash, map_location=device)
 
 '''
-fb = filter_bank_sthash_vae.squeeze(0)
+fb = filter_bank_sthash.squeeze(0)
 fb = fb.permute(1, 2, 3, 0)
 fb = fb.to('cpu').detach()
 #fb = torch.softmax(fb, dim=-1)

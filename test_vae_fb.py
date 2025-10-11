@@ -10,10 +10,10 @@ import matplotlib.pyplot as plt
 from torchvision.utils import save_image
 
 batch_size = 100
-FILE = './save/MNIST/model_vae_epoch_500_vae_warmup_cotrain.pth'
-FILE_fb = './save/MNIST/fb_vae_epoch_500_vae_warmup_cotrain.pth'
+FILE = './save/MNIST/model_vae_epoch_100_exp4.pth'
+FILE_fb = './save/MNIST/fb_vae_epoch_100_exp4.pth'
 # device
-device = torch.device('cuda:1' if torch.cuda.is_available else 'cpu')
+device = torch.device('cuda:0' if torch.cuda.is_available else 'cpu')
 torch.cuda.set_device(device)
 dn = torch.cuda.get_device_name(device)
 print('using device:', dn)
