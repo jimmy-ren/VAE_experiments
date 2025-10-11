@@ -6,7 +6,7 @@ import time
 from main_network import*
 
 #some config
-num_epochs = 1000
+num_epochs = 200
 batch_size = 100
 learning_rate = 0.0002
 learning_rate_fb = 0.0001
@@ -24,7 +24,7 @@ train_dataset = torchvision.datasets.MNIST(root='./data', train=True, transform=
                                           download=True)
 
 # device
-device = torch.device('cuda:0' if torch.cuda.is_available else 'cpu')
+device = torch.device('cuda:1' if torch.cuda.is_available else 'cpu')
 torch.cuda.set_device(device)
 dn = torch.cuda.get_device_name(device)
 print('using device:', dn)
@@ -44,7 +44,7 @@ filter_bank_vae = torch.load(FILE_fb, map_location=device)
 
 FILE_sthash_fb = './save/MNIST/fb_novae_epoch_50.pth'
 filter_bank_sthash = torch.load(FILE_sthash_fb, map_location=device)
-filter_bank_sthash.requires_grad = False
+filter_bank_sthash.requires_grad = True
 
 # freeze the parameters
 #for param in model.parameters():
@@ -55,7 +55,7 @@ criterion = nn.MSELoss()
 criterion2 = KLD_VAE_Loss()
 criterion3 = nn.MSELoss()
 optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
-fb_optimizer = torch.optim.Adam([filter_bank_vae], lr=learning_rate_fb)
+fb_optimizer = torch.optim.Adam([filter_bank_vae, filter_bank_sthash], lr=learning_rate_fb)
 
 # training loop
 loss_sum_in_step_loop1 = 0
@@ -98,10 +98,12 @@ for epoch in range(num_epochs):
         loss2 = criterion2(pred_mean, pred_variance)
         # KPN loss
         loss3 = criterion3(filter_out, img_GT)
-        loss = loss1 + 0.00001*loss2 + loss3
+        #loss = loss1 + 0.000005*loss2 + loss3
+        loss = loss1 + 0.018 * loss2 + loss3
         #loss = loss3
         FILE = f'./save/MNIST/model_sthash_vae_epoch_{epoch + 1}.pth'
         FILE_fb = f'./save/MNIST/fb_sthash_vae_epoch_{epoch + 1}.pth'
+        FILE_sthash_fb = f'./save/MNIST/fb_sthash_buddy_epoch_{epoch + 1}.pth'
 
         # backward
         loss.backward()
@@ -156,6 +158,7 @@ for epoch in range(num_epochs):
     if (epoch + 1) % 10 == 0:
         torch.save(model.state_dict(), FILE)
         torch.save(filter_bank_vae, FILE_fb)
+        torch.save(filter_bank_sthash, FILE_sthash_fb)
 
     end_time = time.time()  # Record end time
     elapsed_time = end_time - start_time  # Calculate elapsed time

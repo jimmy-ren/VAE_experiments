@@ -500,5 +500,5 @@ class KLD_VAE_Loss(nn.Module):
     def forward(self, pred_mean, pred_variance):
         loss = -torch.log(torch.sqrt(pred_variance)) + (pred_variance + pred_mean.pow(2)) / 2 - 0.5
         #tmp = -0.5 * torch.sum(1 + torch.log(pred_variance) - pred_mean.pow(2) - pred_variance)
-        loss = torch.sum(loss)
+        loss = torch.sum(loss) / loss.shape[0]
         return loss

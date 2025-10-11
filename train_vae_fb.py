@@ -6,7 +6,7 @@ import time
 from main_network import*
 
 #some config
-num_epochs = 1000
+num_epochs = 200
 batch_size = 100
 learning_rate = 0.0002
 learning_rate_fb = 0.0001
@@ -122,7 +122,8 @@ for epoch in range(num_epochs):
         loss2 = criterion2(pred_mean, pred_variance)
         # KPN loss
         loss3 = criterion3(filter_out, img_GT)
-        loss = loss1 + 0.00001*loss2 + loss3
+        #loss = loss1 + 0.000005*loss2 + loss3
+        loss = loss1 + 0.018 * loss2 + loss3
         #loss = loss3
         FILE = f'./save/MNIST/model_vae_epoch_{epoch + 1}.pth'
         FILE_fb = f'./save/MNIST/fb_vae_epoch_{epoch + 1}.pth'
