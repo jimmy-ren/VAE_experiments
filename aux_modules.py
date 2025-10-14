@@ -389,13 +389,13 @@ class MidC(nn.Module):
             ) for i in range(num_layers + 1)
         ])
 
-    def forward(self, x, t_emb):
+    def forward(self, x):
         out = x
 
         # First-Resnet Block
         resnet_input = out
         out = self.conv1[0](out)
-        out = out + self.te_block[0](t_emb)[:, :, None, None]
+        #out = out + self.te_block[0](t_emb)[:, :, None, None]
         out = self.conv2[0](out)
         out = out + self.res_block[0](resnet_input)
 
@@ -409,7 +409,7 @@ class MidC(nn.Module):
             # Resnet Block
             resnet_input = out
             out = self.conv1[i + 1](out)
-            out = out + self.te_block[i + 1](t_emb)[:, :, None, None]
+            #out = out + self.te_block[i + 1](t_emb)[:, :, None, None]
             out = self.conv2[i + 1](out)
             out = out + self.res_block[i + 1](resnet_input)
 
